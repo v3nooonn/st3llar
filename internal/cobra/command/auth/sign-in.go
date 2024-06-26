@@ -3,7 +3,7 @@ package auth
 import (
 	"fmt"
 
-	"github.com/v3nooom/stellar-auto-task/internal/cobra/command"
+	"github.com/v3nooom/st3llar-helper/internal/cobra/command"
 
 	"github.com/spf13/cobra"
 )

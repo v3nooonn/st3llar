@@ -1,4 +1,4 @@
-module github.com/v3nooom/stellar-auto-task
+module github.com/v3nooom/st3llar-helper
 
 go 1.22.2
 
