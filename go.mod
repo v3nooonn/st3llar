@@ -3,14 +3,15 @@ module github.com/v3nooom/st3llar-helper
 go 1.22.2
 
 require (
+	github.com/aws/aws-sdk-go-v2 v1.30.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.21
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.34.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 )
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.30.0 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.21 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.8 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.12 // indirect
