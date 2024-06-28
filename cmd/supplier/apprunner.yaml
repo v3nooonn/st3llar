@@ -1,0 +1,22 @@
+version: 1.0
+runtime: go1
+build:
+  commands:
+    pre-build:
+      - go mod tidy
+    build:
+      - go build supplier.go -o supplier
+#    post-build:
+#      - scripts/postbuild.sh
+  env:
+    - name: KEY_EXAMPLE_1
+      value: "S0VZX0VYQU1QTEVfMQ=="
+run:
+  runtime-version: 1.22.2
+  command: ./supplier
+  network:
+    port: 8080
+    env: APP_PORT
+  env:
+    - name: KEY_EXAMPLE_2
+      value: "S0VZX0VYQU1QTEVfMg=="
