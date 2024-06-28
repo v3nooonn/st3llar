@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/v3nooom/st3llar-helper/internal/cobra/command"
 
@@ -17,8 +18,12 @@ var signIn = &cobra.Command{
 sign-in
 
 Cobra is a CLI library for Go that empowers applications.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("sign-in called")
+		if time.Now().Second()%2 == 0 {
+			return fmt.Errorf("error: invalid credentials")
+		}
+		return nil
 	},
 }
 
