@@ -37,11 +37,19 @@ func main() {
 	r.Run(":8080")
 }
 
+func initSQSClient() *sqs.Client {
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		log.Fatalf("unable to load SDK config, %v", err)
+	}
+
+	return sqs.NewFromConfig(cfg)
+}
+
 func ErrorMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Next() // 处理请求
+		c.Next()
 
-		// 捕获所有可能的错误
 		if len(c.Errors) > 0 {
 			c.Header("Content-Type", "application/json")
 
@@ -54,15 +62,6 @@ func ErrorMiddleware() gin.HandlerFunc {
 			return
 		}
 	}
-}
-
-func initSQSClient() *sqs.Client {
-	cfg, err := config.LoadDefaultConfig(context.Background())
-	if err != nil {
-		log.Fatalf("unable to load SDK config, %v", err)
-	}
-
-	return sqs.NewFromConfig(cfg)
 }
 
 func sendMessageToSQS(client *sqs.Client, queueUrl string, msg Message) error {
