@@ -1,4 +1,4 @@
-module github.com/v3nooom/st3llar-helper
+module github.com/v3nooom/st3llar
 
 go 1.22.2
 

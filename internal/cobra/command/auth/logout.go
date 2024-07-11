@@ -4,20 +4,16 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/v3nooom/st3llar-helper/internal/cobra/command"
+	"github.com/v3nooom/st3llar/internal/cobra/command"
 
 	"github.com/spf13/cobra"
 )
 
-// signIn represents the sign-in command
-var signIn = &cobra.Command{
-	Use:   "sign-in",
-	Short: "A brief description of sign-in",
-	Long: `A longer description. For example:
-
-sign-in
-
-Cobra is a CLI library for Go that empowers applications.`,
+// logout represents the sign-in command
+var logout = &cobra.Command{
+	Use:   "logout",
+	Short: "Logout from the Stellar auto-task",
+	Long:  `Logout will clear the current session and remove the access token from the local credentials.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("sign-in called")
 		if time.Now().Second()%2 == 0 {
@@ -28,7 +24,7 @@ Cobra is a CLI library for Go that empowers applications.`,
 }
 
 func init() {
-	command.Root.AddCommand(signIn)
+	command.Root.AddCommand(logout)
 
 	// Here you will define your flags and configuration settings.
 

@@ -3,7 +3,7 @@ package overview
 import (
 	"fmt"
 
-	"github.com/v3nooom/st3llar-helper/internal/cobra/command"
+	"github.com/v3nooom/st3llar/internal/cobra/command"
 
 	"github.com/spf13/cobra"
 )
@@ -11,12 +11,11 @@ import (
 // self represents the overview command
 var self = &cobra.Command{
 	Use:   "self",
-	Short: "A brief description of self",
-	Long: `A longer description. For example:
-
-self
-
-Cobra is a CLI library for Go that empowers applications.`,
+	Short: "Shows the current users basic information",
+	Long: `Showing the items below:
+1. Organization and account info.
+2. Session details.
+3. Brief info about the available Lambdas.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("self called")
 	},

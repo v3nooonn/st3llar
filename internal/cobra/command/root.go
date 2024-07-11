@@ -1,6 +1,7 @@
 package command
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -14,17 +15,21 @@ var (
 
 	// Root represents the base command when called without any subcommands
 	Root = &cobra.Command{
-		Use:   "helper",
-		Short: "Stellar helper CLI",
-		Long: `This is a Stellar helper for quickly running users' method functions.
-
-Stellar helper CLI is a command line tool that helps users to quickly run their method functions. 
-It provides a set of cobra that can be used to interact with the Stellar network and perform various tasks,
-such as creating accounts, sending and receiving payments, and managing assets.`,
+		Use:   "st3llar",
+		Short: "Stellar auto-task supporter CLI: st3llar",
+		Long: `st3llar is a command line tool that helps users to quickly run their method functions. 
+It provides a set of cobra that can be used to interact with the server endpoints, whose main goal is:
+1. Helping users to register their method functions to AWS Lambda.
+2. Triggering/Scheduling the Lambda
+3. Monitoring the Lambda execution status and results.
+4. Lambdas management`,
 		//Uncomment the following line if your bare application
 		//has an action associated with it:
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("helper called")
+		//Run: func(cmd *cobra.Command, args []string) {
+		//	fmt.Println("st3llar called")
+		//},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return errors.New("todo error in main CMD")
 		},
 	}
 )
@@ -72,7 +77,7 @@ func initConfig() {
 		// Search config in home directory with name ".stellar-auto-task" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".stellar-auto-task")
+		viper.SetConfigName(".st3llar")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match

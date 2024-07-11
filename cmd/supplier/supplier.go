@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/v3nooom/st3llar-helper/internal/server/handler"
+	"github.com/v3nooom/st3llar/internal/server/handler"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,8 +19,7 @@ func main() {
 		})
 	})
 
-	r.GET("/lambda/:input", handler.MessageHandler())
-	r.POST("/hooks/stream/log", handler.StreamLogHandler())
+	r.POST("/demo", handler.DemoHandler())
 
 	r.Run(":8080")
 }
