@@ -21,5 +21,10 @@ func DemoHandler() gin.HandlerFunc {
 		}
 
 		fmt.Println("Received log from AppRunner: ", payload.Field1)
+
+		c.JSON(200, gin.H{
+			"message":  "ok",
+			"received": payload.Field1,
+		})
 	}
 }
