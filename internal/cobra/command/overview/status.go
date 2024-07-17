@@ -8,21 +8,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// self represents the overview command
-var self = &cobra.Command{
-	Use:   "self",
+// status represents the overview command
+var status = &cobra.Command{
+	Use:   "status",
 	Short: "Shows the current users basic information",
 	Long: `Showing the items below:
 1. Organization and account info.
-2. Session details.
-3. Brief info about the available Lambdas.`,
+2. Session details.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("self called")
+		fmt.Println("status called")
 	},
 }
 
 func init() {
-	command.Root.AddCommand(self)
+	command.Root.AddCommand(status)
 
 	// Here you will define your flags and configuration settings.
 

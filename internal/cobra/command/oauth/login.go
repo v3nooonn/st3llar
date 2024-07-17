@@ -1,4 +1,4 @@
-package auth
+package oauth
 
 import (
 	"fmt"
@@ -15,15 +15,23 @@ var login = &cobra.Command{
 	Short: "Login to the Stellar auto-task.",
 	Long: `Login to the Stellar auto-task by the pre-established credentials:
 1. Organization
-2. Account and password
+2. Account and Password
 
 Available credentials are stored locally in the default path: ./credentials.json, once login successfully.
 And you can use --credentials to specify the path of the credentials file.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		//# 对于Windows 64位 GOOS=windows GOARCH=amd64 去建立 -o mycli-windows.exe ./path/to/package
+		//# 对于macOS 64位 GOOS=darwin GOARCH=amd64 去建立 -o mycli-macos ./path/to/package
+		//# 对于Linux 64位 GOOS=linux GOARCH=amd64 去建立 -o mycli-linux ./path/to/package
+		//survey.AskOne() //TODO: pwd interactiveness
+
 		fmt.Println("login called")
+		fmt.Printf("args: %v\n", args)
 		if time.Now().Second()%2 == 0 {
 			return fmt.Errorf("error: invalid credentials")
 		}
+
+		fmt.Println("login successful")
 		return nil
 	},
 }
@@ -31,13 +39,6 @@ And you can use --credentials to specify the path of the credentials file.`,
 func init() {
 	command.Root.AddCommand(login)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// aboutCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// aboutCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	login.Flags().StringP("username", "U", "", "Name of the account")
+	login.Flags().StringP("organization", "O", "", "Name of the organization")
 }

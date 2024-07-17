@@ -1,4 +1,4 @@
-package auth
+package oauth
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ var logout = &cobra.Command{
 	Short: "Logout from the Stellar auto-task",
 	Long:  `Logout will clear the current session and remove the access token from the local credentials.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("sign-in called")
+		fmt.Println("logout called")
 		if time.Now().Second()%2 == 0 {
 			return fmt.Errorf("error: invalid credentials")
 		}
