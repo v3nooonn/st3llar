@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/v3nooom/st3llar/internal/cobra/command"
 	_ "github.com/v3nooom/st3llar/internal/cobra/command/oauth"
-	_ "github.com/v3nooom/st3llar/internal/cobra/command/overview"
+	//_ "github.com/v3nooom/st3llar/internal/cobra/command/overview"
 )
 
 func main() {

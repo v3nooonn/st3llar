@@ -11,18 +11,24 @@ import (
 var (
 	cfgFile string
 
-	// Root represents the base command when called without any subcommands
-	Root = &cobra.Command{
-		Use:   "st3llar",
-		Short: "Stellar AutoTask CLI: st3llar",
-		Long:  `st3llar is a CLI tool that helps users to quickly run their method functions.`,
-		//It provides a set of commands to interact with the server, whose main features are:
-		//1. Register functions to AWS Lambda.
-		//2. Triggering/Scheduling the Lambda.
-		//3. Monitoring the Lambda execution status and results.
-		//4. Lambdas management.`,
-	}
+	configPath string
+	outputPath string
 )
+
+// Root represents the base command when called without any subcommands
+var Root = &cobra.Command{
+	Use: "st3llar",
+	//Args: cobra.NoArgs,
+	Args:      cobra.OnlyValidArgs,
+	ValidArgs: []string{"login", "logout"},
+	// func(cmd *Command, args []string) err
+	// NoArgs(cmd *Command, args []string) err
+	Short: "Stellar AutoTask CLI: st3llar",
+	Long:  `st3llar is a CLI tool that helps users to quickly run their method functions.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("configPath: %v\n", configPath)
+	},
+}
 
 // Execute adds all child cobra to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the Root.
@@ -36,27 +42,20 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// aboutCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// aboutCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
+	//# 对于macOS 64位 GOOS=darwin GOARCH=amd64 去建立 -o mycli-macos ./path/to/package
+	//# 对于Linux 64位 GOOS=linux GOARCH=amd64 去建立 -o mycli-linux ./path/to/package
 	//viper.SetDefault("author", "v3nooom@outlook.com")
 	//viper.SetDefault("license", "apache 2.0")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	Root.PersistentFlags().StringP("gfs", "g", "", "used for this command and all subcommands")
-	Root.Flags().StringP("lfs", "l", "", "only run when this command is called directly")
+	Root.PersistentFlags().StringVarP(&configPath, "config", "", "", "to specify the path of the configuration file")
+	Root.PersistentFlags().StringP("version", "v", "", "only run when this command is called directly")
+	Root.PersistentFlags().StringVarP(&outputPath, "output", "o", "", "the output destination of the current command")
 
 	// Customized HelpFunc and UsageFunc
 	//Root.SetHelpCommand(&cobra.Command{})
-	//Root.SetUsageFunc(func(cmd *cobra.Command) error {
+	//Root.SetUsageFunc(func(cmd *cobra.Command) err {
 	//	fmt.Println("This is the help message for the root command")
 	//	return nil
 	//})
