@@ -6,10 +6,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/v3nooom/st3llar/internal/cobra/command"
-	"github.com/v3nooom/st3llar/internal/server/constant"
-	"github.com/v3nooom/st3llar/internal/server/errorx"
-	"github.com/v3nooom/st3llar/internal/server/handler/oauth"
+	rootCMD "github.com/v3nooom/st3llar/internal/command"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
@@ -33,7 +30,7 @@ type Credential struct {
 
 // login represents the sign-in command
 var login = &cobra.Command{
-	Use:   "login <command> <flags>",
+	Use:   "login",
 	Short: "Login to the Stellar auto-task.",
 	Long: `Login to the Stellar auto-task by the pre-established credentials:
 1. Organization
@@ -48,11 +45,12 @@ And you can use --credentials to specify the path of the credentials file.`,
 }
 
 func init() {
-	command.Root.AddCommand(login)
+	rootCMD.Root.AddCommand(login)
 
 	login.Flags().StringVarP(&organization, "organization", "O", "", "Name of the organization")
 	login.Flags().StringVarP(&username, "username", "U", "", "Name of the account")
 	login.Flags().StringVarP(&username, "env", "", "", "Environment of the CLI")
+	rootCMD.Viper.BindPFlag("env", rootCMD.Root.PersistentFlags().Lookup("debug"))
 
 	if err := login.MarkFlagRequired("organization"); err != nil {
 		return
@@ -67,19 +65,20 @@ func loginFunc(cmd *cobra.Command, args []string) {
 	passwordBytes, err := term.ReadPassword(syscall.Stdin)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error reading password")
-		os.Exit(constant.ErrReadPassword.Int())
+		os.Exit(1)
 		return
 	}
 
 	password = string(passwordBytes)
 
-	fmt.Println("login called")
+	fmt.Println("----------------- loginFunc() ------------------")
+	fmt.Printf("in viper: %v\n", rootCMD.Viper.GetString("environment"))
 	fmt.Printf("login args: %v\n", args)
 	fmt.Printf("login output: %v\n", credentialPath)
 	fmt.Printf("login env: %v\n", env)
+	fmt.Printf("login env from viper: %v\n", rootCMD.Viper.GetString("env"))
 
-	// TODO: below should be replaced with calling the server domain, instead of calling it directly and internally.
-	errorx.ErrorMapping(oauth.HandlerLogin.Login(organization, username, password))
+	//errorx.ErrorMapping(oauth.HandlerLogin.Login(organization, username, password))
 
 	cred := Credential{
 		Organization: organization,

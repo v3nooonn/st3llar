@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/v3nooom/st3llar/internal/server/handler"
+	"github.com/v3nooom/st3llar-supplier/internal/handler"
 
 	"github.com/gin-gonic/gin"
 )
