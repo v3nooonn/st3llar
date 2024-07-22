@@ -1,7 +1,6 @@
 package oauth
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"syscall"
@@ -16,9 +15,9 @@ var (
 	organization string
 	username     string
 	password     string
-	env          = "dev"
 
-	credentialPath = "./credential.json"
+	//env          = "dev"
+	//credentialPath = "./credential.json"
 )
 
 type Credential struct {
@@ -32,10 +31,8 @@ type Credential struct {
 var login = &cobra.Command{
 	Use:   "login",
 	Short: "Login to the Stellar auto-task.",
-	Long: `Login to the Stellar auto-task by the pre-established credentials:
-1. Organization
-2. Account and Password
-3. Environment - optional
+	Long: `Login to the Stellar auto-action by the pre-established credentials:
+Organization, Account and Password
 
 Available credentials are stored locally in the default path: ./credentials.json, once login successfully.
 And you can use --credentials to specify the path of the credentials file.`,
@@ -50,7 +47,7 @@ func init() {
 	login.Flags().StringVarP(&organization, "organization", "O", "", "Name of the organization")
 	login.Flags().StringVarP(&username, "username", "U", "", "Name of the account")
 	login.Flags().StringVarP(&username, "env", "", "", "Environment of the CLI")
-	rootCMD.Viper.BindPFlag("env", rootCMD.Root.PersistentFlags().Lookup("debug"))
+	rootCMD.Vp.BindPFlag("env", rootCMD.Root.PersistentFlags().Lookup("debug"))
 
 	if err := login.MarkFlagRequired("organization"); err != nil {
 		return
@@ -61,6 +58,7 @@ func init() {
 }
 
 func loginFunc(cmd *cobra.Command, args []string) {
+	// TODO: error handling
 	fmt.Print("Password: ")
 	passwordBytes, err := term.ReadPassword(syscall.Stdin)
 	if err != nil {
@@ -72,32 +70,30 @@ func loginFunc(cmd *cobra.Command, args []string) {
 	password = string(passwordBytes)
 
 	fmt.Println("----------------- loginFunc() ------------------")
-	fmt.Printf("in viper: %v\n", rootCMD.Viper.GetString("environment"))
-	fmt.Printf("login args: %v\n", args)
-	fmt.Printf("login output: %v\n", credentialPath)
-	fmt.Printf("login env: %v\n", env)
-	fmt.Printf("login env from viper: %v\n", rootCMD.Viper.GetString("env"))
+	//fmt.Printf("in viper: %v\n", rootCMD.Vp.GetString("environment"))
+	//fmt.Printf("login args: %v\n", args)
+	//fmt.Printf("login output: %v\n", credentialPath)
+	//fmt.Printf("login env: %v\n", env)
+	//fmt.Printf("login env from viper: %v\n", rootCMD.Vp.GetString("env"))
 
-	//errorx.ErrorMapping(oauth.HandlerLogin.Login(organization, username, password))
-
-	cred := Credential{
-		Organization: organization,
-		Username:     username,
-		Environment:  env,
-	}
-
-	// Marshal struct to JSON
-	//credJSON, err := json.Marshal(cred)
-	credJSON, err := json.MarshalIndent(cred, "", "  ")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error marshaling credentials to JSON")
-		os.Exit(1)
-	}
-
-	// Write JSON to file
-	err = os.WriteFile(credentialPath, credJSON, 0644)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error writing credentials to file")
-		os.Exit(1)
-	}
+	//cred := Credential{
+	//	Organization: organization,
+	//	Username:     username,
+	//	Environment:  env,
+	//}
+	//
+	//// Marshal struct to JSON
+	////credJSON, err := json.Marshal(cred)
+	//credJSON, err := json.MarshalIndent(cred, "", "  ")
+	//if err != nil {
+	//	fmt.Fprintln(os.Stderr, "Error marshaling credentials to JSON")
+	//	os.Exit(1)
+	//}
+	//
+	//// Write JSON to file
+	//err = os.WriteFile(credentialPath, credJSON, 0644)
+	//if err != nil {
+	//	fmt.Fprintln(os.Stderr, "Error writing credentials to file")
+	//	os.Exit(1)
+	//}
 }

@@ -5,22 +5,24 @@ import (
 	"strconv"
 )
 
-type ConfigConst string
+type Configuration string
 
 const (
-	EnvPrefix ConfigConst = "st3llar"
-
-	// ConfigFilePath ConfigConst = "./internal/config/"
-
-	ConfigFileName ConfigConst = ".st3llar"
-	ConfigFileType ConfigConst = ".yaml"
+	Environment  Configuration = "DEVELOPMENT"
+	EnvPrefix    Configuration = "ST3LLAR"
+	Organization Configuration = "57B"
 )
 
-func (cc ConfigConst) ValStr() string {
+const (
+	ConfigFileName Configuration = ".st3llar"
+	ConfigFileType Configuration = "yaml"
+)
+
+func (cc Configuration) ValStr() string {
 	return string(cc)
 }
 
-func (cc ConfigConst) ValInt() int {
+func (cc Configuration) ValInt() int {
 	intVal, err := strconv.Atoi(cc.ValStr())
 	if err != nil {
 		fmt.Printf("Error converting <%s> to int: %s\n", cc.ValStr(), err.Error())
@@ -30,7 +32,7 @@ func (cc ConfigConst) ValInt() int {
 	return intVal
 }
 
-func (cc ConfigConst) ValFloat32() float32 {
+func (cc Configuration) ValFloat32() float32 {
 	floatValue, err := strconv.ParseFloat(cc.ValStr(), 32)
 	if err != nil {
 		fmt.Printf("Error converting <%s> to float32: %s\n", cc.ValStr(), err.Error())
@@ -40,7 +42,7 @@ func (cc ConfigConst) ValFloat32() float32 {
 	return float32(floatValue)
 }
 
-func (cc ConfigConst) ValFloat64() float64 {
+func (cc Configuration) ValFloat64() float64 {
 	floatValue, err := strconv.ParseFloat(cc.ValStr(), 64)
 	if err != nil {
 		fmt.Printf("Error converting <%s> to float64: %s\n", cc.ValStr(), err.Error())
