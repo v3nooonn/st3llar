@@ -8,14 +8,16 @@ import (
 type Configuration string
 
 const (
-	Environment  Configuration = "DEVELOPMENT"
+	Environment  Configuration = "Testnet"
 	EnvPrefix    Configuration = "ST3LLAR"
 	Organization Configuration = "57B"
 )
 
 const (
-	ConfigFileName Configuration = ".st3llar"
-	ConfigFileType Configuration = "yaml"
+	ConfigName     Configuration = ".st3llar"
+	ConfigType     Configuration = "yaml"
+	CredentialName Configuration = ".st3llar-credentials"
+	CredentialType Configuration = "yaml"
 )
 
 func (cc Configuration) ValStr() string {

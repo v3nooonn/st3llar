@@ -2,6 +2,7 @@ package command
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,10 +10,8 @@ import (
 	"github.com/v3nooom/st3llar/internal/config"
 	"github.com/v3nooom/st3llar/internal/constant"
 
-	"github.com/sagikazarmark/slog-shim"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -32,18 +31,8 @@ var Root = &cobra.Command{
 		DisableDefaultCmd: true,
 		HiddenDefaultCmd:  true,
 	},
-	PreRun: func(cmd *cobra.Command, args []string) {
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
-
-		setupViper()
-		checkConfig(home)
-		bindViper(home)
-		fmt.Printf("Using cfg path: %s\n", Vp.ConfigFileUsed())
-
-	},
+	PreRun: func(cmd *cobra.Command, args []string) {},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("st3llar root command...")
 		cmd.Usage()
 	},
 }
@@ -58,7 +47,14 @@ func Execute() {
 }
 
 func init() {
-	//cobra.OnInitialize(preRun) // using pre-run instead
+	// This part below is configured for the root and all of its subcommands,
+	// so, should not be put in the `PreRun`
+	home := config.Home()
+
+	cfg, _ := findConfig(home)
+	setupViper(cfg)
+	bindViper(home)
+	slog.Info(fmt.Sprintf("using config path: %s", Vp.ConfigFileUsed()))
 
 	//# 对于macOS 64位 GOOS=darwin GOARCH=amd64 去建立 -o mycli-macos ./path/to/package
 	//# 对于Linux 64位 GOOS=linux GOARCH=amd64 去建立 -o mycli-linux ./path/to/package
@@ -87,20 +83,31 @@ func init() {
 }
 
 // setupViper viper initialization
-func setupViper() {
+func setupViper(cfg *config.St3llarConfig) {
+	logger := slog.Default()
+	switch cfg.LogLevel {
+	case constant.Debug.ValStr():
+		slog.SetLogLoggerLevel(slog.LevelDebug)
+	case constant.Warn.ValStr():
+		slog.SetLogLoggerLevel(slog.LevelWarn)
+	case constant.Error.ValStr():
+		slog.SetLogLoggerLevel(slog.LevelError)
+	default:
+		slog.SetLogLoggerLevel(slog.LevelInfo)
+	}
+
 	Vp = viper.NewWithOptions(
 		viper.EnvKeyReplacer(strings.NewReplacer(".", "_")),
-		viper.WithLogger(slog.Default()),
+		viper.WithLogger(logger),
 		//viper.KeyDelimiter("::"),
 	)
-
 }
 
 // bindViper bind viper
 func bindViper(home string) {
 	Vp.AddConfigPath(home)
-	Vp.SetConfigType(constant.ConfigFileType.ValStr())
-	Vp.SetConfigName(constant.ConfigFileName.ValStr())
+	Vp.SetConfigType(constant.ConfigType.ValStr())
+	Vp.SetConfigName(constant.ConfigName.ValStr())
 
 	//viper.SetDefault("author", "v3nooom@outlook.com")
 	//viper.SetDefault("license", "apache 2.0")
@@ -110,42 +117,35 @@ func bindViper(home string) {
 	cobra.CheckErr(Vp.ReadInConfig())
 }
 
-// checkConfig checks the configuration file
-func checkConfig(home string) string {
-	path := filepath.Join(home, constant.ConfigFileName.ValStr())
+// findConfig checks the configuration file
+func findConfig(home string) (*config.St3llarConfig, string) {
+	cfgPath := filepath.Join(home, constant.ConfigName.ValStr())
 
-	if isExists(path) {
-		return path
+	if isExists(cfgPath) {
+		cfg, err := config.ReadConfig(cfgPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+			os.Exit(1)
+		}
+
+		return cfg, cfgPath
 	}
 
 	cfg := config.Build(
 		config.WithDefault(),
-		config.WithCredential(home),
+		config.WithCredential(filepath.Join(home, constant.CredentialName.ValStr())),
 	)
 
-	if err := newConfigFile(cfg, path); err != nil {
+	if err := config.WriteConfigFile(cfg, cfgPath); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		os.Exit(1)
 	}
 
-	return path
+	return cfg, cfgPath
 }
 
 func isExists(path string) bool {
 	_, err := os.Stat(path)
 
 	return err == nil
-}
-
-func newConfigFile(cfg *config.St3llarConfig, path string) error {
-	yamlBytes, err := yaml.Marshal(cfg)
-	if err != nil {
-		return fmt.Errorf("marshalling default config error: %w", err)
-	}
-
-	if err := os.WriteFile(path, yamlBytes, 0666); err != nil {
-		return fmt.Errorf("writing config file error, %w: %s\n", err, path)
-	}
-
-	return nil
 }
