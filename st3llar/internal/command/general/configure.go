@@ -2,6 +2,7 @@ package general
 
 import (
 	"fmt"
+	"github.com/v3nooom/st3llar/internal/util"
 	"log/slog"
 	"os"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/v3nooom/st3llar/internal/constant"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -20,6 +22,8 @@ var (
 		Long:  `Configure the Stellar auto-action by passing one of them as flags`,
 		Args:  cobra.NoArgs,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
+			util.PreRunBindFlags(cmd, args)
+
 			if !cmd.Flags().Changed(constant.FlagLogLevel.ValStr()) &&
 				!cmd.Flags().Changed(constant.FlagEnvPrefix.ValStr()) &&
 				!cmd.Flags().Changed(constant.FlagEnvironment.ValStr()) &&
@@ -37,44 +41,55 @@ func init() {
 	rootCMD.Root.AddCommand(configure)
 
 	flagLogLevel := constant.FlagLogLevel.ValStr()
-	configure.Flags().StringP(flagLogLevel, "",
-		rootCMD.Vp.GetString(flagLogLevel), "to specify the log level")
-	rootCMD.Vp.BindPFlag(flagLogLevel, configure.Flags().Lookup(flagLogLevel))
+	configure.Flags().StringP(
+		flagLogLevel,
+		"",
+		viper.GetString(flagLogLevel),
+		"configure the log level")
 
 	flagEnvPrefix := constant.FlagEnvPrefix.ValStr()
-	configure.Flags().StringP(flagEnvPrefix, "",
-		rootCMD.Vp.GetString(flagEnvPrefix), "Name prefix of the environment variables")
-	rootCMD.Vp.BindPFlag(flagEnvPrefix, configure.Flags().Lookup(flagEnvPrefix))
+	configure.Flags().StringP(
+		flagEnvPrefix,
+		"",
+		viper.GetString(flagEnvPrefix),
+		"configure the name prefix of the environment variables")
 
 	flagEnv := constant.FlagEnvironment.ValStr()
-	configure.Flags().StringP(flagEnv, "",
-		rootCMD.Vp.GetString(flagEnv), "environment of the CLI work with")
-	rootCMD.Vp.BindPFlag(flagEnv, configure.Flags().Lookup(flagEnv))
+	configure.Flags().StringP(
+		flagEnv,
+		"",
+		viper.GetString(flagEnv),
+		"configure the environment of the CLI work with")
 
 	flagOrg := constant.FlagOrganization.ValStr()
-	configure.Flags().StringP(flagOrg, "",
-		rootCMD.Vp.GetString(flagOrg), "organization of the CLI work in")
-	rootCMD.Vp.BindPFlag(flagOrg, configure.Flags().Lookup(flagOrg))
+	configure.Flags().StringP(
+		flagOrg,
+		"",
+		viper.GetString(flagOrg),
+		"configure the organization of the CLI work in")
 
 	flagCred := constant.FlagCredential.ValStr()
-	configure.Flags().StringP(flagCred, "",
-		rootCMD.Vp.GetString(flagCred), "credential file path")
-	rootCMD.Vp.BindPFlag(flagCred, configure.Flags().Lookup(flagCred))
+	configure.Flags().StringP(
+		flagCred,
+		"",
+		viper.GetString(flagCred),
+		"configure the credential file path")
 }
 
-func configureFunc(cmd *cobra.Command, _ []string) {
+func configureFunc(_ *cobra.Command, _ []string) {
 	cfg := config.Build(
-		config.WithLogLevel(rootCMD.Vp.GetString(constant.FlagLogLevel.ValStr())),
-		config.WithEnvPrefix(rootCMD.Vp.GetString(constant.FlagEnvPrefix.ValStr())),
-		config.WithEnvironment(rootCMD.Vp.GetString(constant.FlagEnvironment.ValStr())),
-		config.WithOrganization(rootCMD.Vp.GetString(constant.FlagOrganization.ValStr())),
-		config.WithCredential(rootCMD.Vp.GetString(constant.FlagCredential.ValStr())),
+		config.WithLogLevel(viper.GetString(constant.FlagLogLevel.ValStr())),
+		config.WithEnvPrefix(viper.GetString(constant.FlagEnvPrefix.ValStr())),
+		config.WithEnvironment(viper.GetString(constant.FlagEnvironment.ValStr())),
+		config.WithOrganization(viper.GetString(constant.FlagOrganization.ValStr())),
+		config.WithCredential(viper.GetString(constant.FlagCredential.ValStr())),
 	)
+	fmt.Printf("latest configuration: %#v\n", cfg)
 
-	if err := config.WriteConfig(cfg, rootCMD.Vp.ConfigFileUsed()); err != nil {
+	if err := config.WriteConfig(cfg, viper.ConfigFileUsed()); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		os.Exit(1)
 	}
 
-	slog.Info(fmt.Sprintf("updated config file: %s\n", rootCMD.Vp.ConfigFileUsed()))
+	slog.Info(fmt.Sprintf("updated config file: %s\n", viper.ConfigFileUsed()))
 }

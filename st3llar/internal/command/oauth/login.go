@@ -2,13 +2,14 @@ package oauth
 
 import (
 	"fmt"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
+	rootCMD "github.com/v3nooom/st3llar/internal/command"
+	"github.com/v3nooom/st3llar/internal/util"
+	"golang.org/x/term"
 	"os"
 	"syscall"
-
-	rootCMD "github.com/v3nooom/st3llar/internal/command"
-
-	"github.com/spf13/cobra"
-	"golang.org/x/term"
 )
 
 var (
@@ -39,6 +40,7 @@ Available credentials are stored locally in the default path: ./credentials.json
 And you can use --credentials to specify the path of the credentials file.`,
 	Args:      cobra.OnlyValidArgs,
 	ValidArgs: []string{"organization", "username", "env"},
+	PreRun:    util.PreRunBindFlags,
 	Run:       loginFunc,
 }
 
@@ -48,8 +50,6 @@ func init() {
 	login.Flags().StringVarP(&outputPath, "output", "o", "", "the output destination of the current command")
 	login.Flags().StringVarP(&organization, "organization", "O", "", "Name of the organization")
 	login.Flags().StringVarP(&username, "username", "U", "", "Name of the account")
-	login.Flags().StringVarP(&username, "env", "", "", "Environment of the CLI")
-	rootCMD.Vp.BindPFlag("env", rootCMD.Root.PersistentFlags().Lookup("debug"))
 
 	if err := login.MarkFlagRequired("organization"); err != nil {
 		return
@@ -71,17 +71,26 @@ func loginFunc(cmd *cobra.Command, args []string) {
 
 	password = string(passwordBytes)
 
-	fmt.Println("----------------- loginFunc() ------------------")
-	//fmt.Printf("in viper: %v\n", rootCMD.Vp.GetString("environment"))
-	//fmt.Printf("login args: %v\n", args)
-	//fmt.Printf("login output: %v\n", credentialPath)
-	//fmt.Printf("login env: %v\n", env)
-	//fmt.Printf("login env from viper: %v\n", rootCMD.Vp.GetString("env"))
+	fmt.Println()
+	fmt.Println("Login Func:")
+	fmt.Println("----> viper settings:")
+	for k, v := range viper.AllSettings() {
+		fmt.Printf("%v: %v\n", k, v)
+	}
+	fmt.Println("----> args:")
+	for _, v := range args {
+		fmt.Printf("%v\n", v)
+	}
+
+	fmt.Println("----> flags:")
+	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
+		fmt.Printf("flag.Name: %v, flag.Value: %v\n", flag.Name, flag.Value)
+	})
 
 	//cred := Credential{
-	//	Organization: organization,
+	//	Organization: viper.GetString(constant.Organization.ValStr()),
 	//	Username:     username,
-	//	Environment:  env,
+	//	Environment:  viper.GetString(constant.Environment.ValStr()),
 	//}
 	//
 	//// Marshal struct to JSON

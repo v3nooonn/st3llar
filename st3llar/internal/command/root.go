@@ -9,14 +9,14 @@ import (
 
 	"github.com/v3nooom/st3llar/internal/config"
 	"github.com/v3nooom/st3llar/internal/constant"
+	"github.com/v3nooom/st3llar/internal/util"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
-var (
-	Vp *viper.Viper
-)
+var version = "v0.0.1"
 
 // Root represents the base command when called without any subcommands
 var Root = &cobra.Command{
@@ -29,11 +29,8 @@ var Root = &cobra.Command{
 		DisableDefaultCmd: true,
 		HiddenDefaultCmd:  true,
 	},
-	PreRun: func(cmd *cobra.Command, args []string) {},
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("viper, credential file: ", Vp.GetString(constant.FlagCredential.ValStr()))
-		cmd.Usage()
-	},
+	PreRun: util.PreRunBindFlags,
+	Run:    rootFunc,
 }
 
 // Execute adds all child cobra to the root command and sets flags appropriately.
@@ -46,10 +43,10 @@ func Execute() {
 }
 
 func init() {
+	initConfig()
+
 	//# 对于macOS 64位 GOOS=darwin GOARCH=amd64 去建立 -o mycli-macos ./path/to/package
 	//# 对于Linux 64位 GOOS=linux GOARCH=amd64 去建立 -o mycli-linux ./path/to/package
-	// This part below is configured for the root and all of its subcommands,
-	// so, should not be put in the `PreRun`
 	Root.SetHelpCommand(&cobra.Command{
 		Use:    "no-help",
 		Hidden: true,
@@ -59,59 +56,34 @@ func init() {
 		Hidden: true,
 	})
 
-	home := config.Home()
-
-	cfg, _ := findConfig(home)
-	setupViper(cfg)
-	bindViper(home)
-	slog.Info(fmt.Sprintf("using config path: %s", Vp.ConfigFileUsed()))
-
-	// TODO: remove the input type of version command
-	//Root.PersistentFlags().StringP("version", "v", "", "only run when this command is called directly")
+	Root.SetVersionTemplate(`Version: {{.Version}}`)
+	Root.Version = version
 
 	flagCred := constant.FlagCredential.ValStr()
-	Root.PersistentFlags().StringP(flagCred, "c",
-		Vp.GetString(flagCred), "the credential file for the command about to be executed")
-	Vp.BindPFlag(flagCred, Root.PersistentFlags().Lookup(flagCred))
+	Root.PersistentFlags().StringP(
+		flagCred,
+		"c",
+		viper.GetString(flagCred),
+		"the credential file for the command about to be executed")
+
+	flagEnv := constant.FlagEnvironment.ValStr()
+	Root.PersistentFlags().StringP(
+		flagEnv,
+		"e",
+		viper.GetString(flagEnv),
+		"the execution environment")
 }
 
-// setupViper viper initialization
-func setupViper(cfg *config.St3llarConfig) {
-	logger := slog.Default()
-	switch cfg.LogLevel {
-	case constant.Debug.ValStr():
-		slog.SetLogLoggerLevel(slog.LevelDebug)
-	case constant.Warn.ValStr():
-		slog.SetLogLoggerLevel(slog.LevelWarn)
-	case constant.Error.ValStr():
-		slog.SetLogLoggerLevel(slog.LevelError)
-	default:
-		slog.SetLogLoggerLevel(slog.LevelInfo)
-	}
-
-	Vp = viper.NewWithOptions(
-		viper.EnvKeyReplacer(strings.NewReplacer(".", "_")),
-		viper.WithLogger(logger),
-		//viper.KeyDelimiter("::"),
-	)
-}
-
-// bindViper bind viper
-func bindViper(home string) {
-	Vp.AddConfigPath(home)
-	Vp.SetConfigType(constant.ConfigType.ValStr())
-	Vp.SetConfigName(constant.ConfigName.ValStr())
-
-	//viper.SetDefault("author", "v3nooom@outlook.com")
-	//viper.SetDefault("license", "apache 2.0")
-
-	Vp.AutomaticEnv()
-
-	cobra.CheckErr(Vp.ReadInConfig())
+func initConfig() {
+	cfg, _ := findConfig()
+	setupViper(cfg)
+	slog.Info(fmt.Sprintf("using config path: %s", viper.ConfigFileUsed()))
 }
 
 // findConfig checks the configuration file
-func findConfig(home string) (*config.St3llarConfig, string) {
+func findConfig() (*config.St3llarConfig, string) {
+	home := config.Home()
+
 	cfgPath := filepath.Join(home, constant.ConfigName.ValStr())
 
 	if isExists(cfgPath) {
@@ -141,4 +113,56 @@ func isExists(path string) bool {
 	_, err := os.Stat(path)
 
 	return err == nil
+}
+
+// setupViper viper setup
+func setupViper(cfg *config.St3llarConfig) {
+	logger := slog.Default()
+	switch cfg.LogLevel {
+	case constant.Debug.ValStr():
+		slog.SetLogLoggerLevel(slog.LevelDebug)
+	case constant.Warn.ValStr():
+		slog.SetLogLoggerLevel(slog.LevelWarn)
+	case constant.Error.ValStr():
+		slog.SetLogLoggerLevel(slog.LevelError)
+	default:
+		slog.SetLogLoggerLevel(slog.LevelInfo)
+	}
+
+	viper.NewWithOptions(
+		viper.EnvKeyReplacer(strings.NewReplacer(".", "_")),
+		viper.WithLogger(logger),
+		//viper.KeyDelimiter("::"),
+	)
+
+	viper.AddConfigPath(config.Home())
+	viper.SetConfigType(constant.ConfigType.ValStr())
+	viper.SetConfigName(constant.ConfigName.ValStr())
+
+	//viper.SetDefault("author", "v3nooom@outlook.com")
+	//viper.SetDefault("license", "apache 2.0")
+
+	viper.AutomaticEnv()
+
+	cobra.CheckErr(viper.ReadInConfig())
+}
+
+func rootFunc(cmd *cobra.Command, args []string) {
+	fmt.Println()
+	fmt.Println("Root Func:")
+	fmt.Println("----> viper settings:")
+	for k, v := range viper.AllSettings() {
+		fmt.Printf("%v: %v\n", k, v)
+	}
+	fmt.Println("----> args:")
+	for _, v := range args {
+		fmt.Printf("%v\n", v)
+	}
+
+	fmt.Println("----> flags:")
+	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
+		fmt.Printf("flag.Name: %v, flag.Value: %v\n", flag.Name, flag.Value)
+	})
+
+	cmd.Usage()
 }
