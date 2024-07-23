@@ -3,11 +3,11 @@ package constant
 type FlagName string
 
 const (
-	FLogLevel     FlagName = "log-level"
-	FEnvPrefix    FlagName = "env-prefix"
-	FEnvironment  FlagName = "environment"
-	FOrganization FlagName = "organization"
-	FCredential   FlagName = "credential"
+	FlagLogLevel     FlagName = "log-level"
+	FlagEnvPrefix    FlagName = "env-prefix"
+	FlagEnvironment  FlagName = "environment"
+	FlagOrganization FlagName = "organization"
+	FlagCredential   FlagName = "credential"
 )
 
 func (f FlagName) ValStr() string {

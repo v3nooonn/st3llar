@@ -16,8 +16,6 @@ import (
 
 var (
 	Vp *viper.Viper
-
-	outputPath string
 )
 
 // Root represents the base command when called without any subcommands
@@ -33,6 +31,7 @@ var Root = &cobra.Command{
 	},
 	PreRun: func(cmd *cobra.Command, args []string) {},
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("viper, credential file: ", Vp.GetString(constant.FlagCredential.ValStr()))
 		cmd.Usage()
 	},
 }
@@ -47,19 +46,10 @@ func Execute() {
 }
 
 func init() {
-	// This part below is configured for the root and all of its subcommands,
-	// so, should not be put in the `PreRun`
-	home := config.Home()
-
-	cfg, _ := findConfig(home)
-	setupViper(cfg)
-	bindViper(home)
-	slog.Info(fmt.Sprintf("using config path: %s", Vp.ConfigFileUsed()))
-
 	//# 对于macOS 64位 GOOS=darwin GOARCH=amd64 去建立 -o mycli-macos ./path/to/package
 	//# 对于Linux 64位 GOOS=linux GOARCH=amd64 去建立 -o mycli-linux ./path/to/package
-
-	// hide default commands in Cobra
+	// This part below is configured for the root and all of its subcommands,
+	// so, should not be put in the `PreRun`
 	Root.SetHelpCommand(&cobra.Command{
 		Use:    "no-help",
 		Hidden: true,
@@ -69,17 +59,20 @@ func init() {
 		Hidden: true,
 	})
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	//Root.PersistentFlags().StringVarP(&configPath, "config", "", "", "to specify the path of the preRun file")
-	Root.PersistentFlags().StringP("version", "v", "", "only run when this command is called directly")
-	Root.PersistentFlags().StringVarP(&outputPath, "output", "o", "", "the output destination of the current command")
+	home := config.Home()
 
-	//Root.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "Display more verbose output in console output. (default: false)")
-	//Vp.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
-	//
-	//Root.PersistentFlags().BoolVarP(&Debug, "debug", "d", false, "Display debugging output in the console. (default: false)")
-	//Vp.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
+	cfg, _ := findConfig(home)
+	setupViper(cfg)
+	bindViper(home)
+	slog.Info(fmt.Sprintf("using config path: %s", Vp.ConfigFileUsed()))
+
+	// TODO: remove the input type of version command
+	//Root.PersistentFlags().StringP("version", "v", "", "only run when this command is called directly")
+
+	flagCred := constant.FlagCredential.ValStr()
+	Root.PersistentFlags().StringP(flagCred, "c",
+		Vp.GetString(flagCred), "the credential file for the command about to be executed")
+	Vp.BindPFlag(flagCred, Root.PersistentFlags().Lookup(flagCred))
 }
 
 // setupViper viper initialization
@@ -136,7 +129,7 @@ func findConfig(home string) (*config.St3llarConfig, string) {
 		config.WithCredential(filepath.Join(home, constant.CredentialName.ValStr())),
 	)
 
-	if err := config.WriteConfigFile(cfg, cfgPath); err != nil {
+	if err := config.WriteConfig(cfg, cfgPath); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		os.Exit(1)
 	}

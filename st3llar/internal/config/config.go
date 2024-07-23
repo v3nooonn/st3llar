@@ -77,7 +77,7 @@ func Home() string {
 	return home
 }
 
-func WriteConfigFile(cfg *St3llarConfig, path string) error {
+func WriteConfig(cfg *St3llarConfig, path string) error {
 	yamlBytes, err := yaml.Marshal(cfg)
 	if err != nil {
 		return fmt.Errorf("marshalling default config error: %w", err)

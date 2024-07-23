@@ -15,6 +15,7 @@ var (
 	organization string
 	username     string
 	password     string
+	outputPath   string
 
 	//env          = "dev"
 	//credentialPath = "./credential.json"
@@ -44,6 +45,7 @@ And you can use --credentials to specify the path of the credentials file.`,
 func init() {
 	rootCMD.Root.AddCommand(login)
 
+	login.Flags().StringVarP(&outputPath, "output", "o", "", "the output destination of the current command")
 	login.Flags().StringVarP(&organization, "organization", "O", "", "Name of the organization")
 	login.Flags().StringVarP(&username, "username", "U", "", "Name of the account")
 	login.Flags().StringVarP(&username, "env", "", "", "Environment of the CLI")
