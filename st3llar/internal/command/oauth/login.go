@@ -25,6 +25,7 @@ var (
 )
 
 type Credential struct {
+	EndPoint     string `json:"endpoint"`
 	Account      string `json:"account"`
 	Token        string `json:"token"`
 	RefreshToken string `json:"refresh_token"`
@@ -95,6 +96,7 @@ func loginFunc(cmd *cobra.Command, args []string) {
 
 	// new credential file
 	cred := Credential{
+		EndPoint:     "http://st3llar-alb-365211.us-east-2.elb.amazonaws.com",
 		Account:      viper.GetString("account"),
 		Token:        "JWT_TOKEN",
 		RefreshToken: "JWT_REFRESH_TOKEN",
