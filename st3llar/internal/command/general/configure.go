@@ -2,13 +2,13 @@ package general
 
 import (
 	"fmt"
-	"github.com/v3nooom/st3llar/internal/util"
 	"log/slog"
 	"os"
 
 	rootCMD "github.com/v3nooom/st3llar/internal/command"
 	"github.com/v3nooom/st3llar/internal/config"
 	"github.com/v3nooom/st3llar/internal/constant"
+	"github.com/v3nooom/st3llar/internal/util"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

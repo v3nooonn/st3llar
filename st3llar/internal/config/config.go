@@ -77,6 +77,10 @@ func Home() string {
 	return home
 }
 
+func DefaultPath() string {
+	return Home() + "/" + constant.ConfigName.ValStr()
+}
+
 func WriteConfig(cfg *St3llarConfig, path string) error {
 	yamlBytes, err := yaml.Marshal(cfg)
 	if err != nil {

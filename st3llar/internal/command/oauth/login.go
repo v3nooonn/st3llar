@@ -2,33 +2,26 @@ package oauth
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
+	"os"
+	"syscall"
+
 	rootCMD "github.com/v3nooom/st3llar/internal/command"
 	"github.com/v3nooom/st3llar/internal/config"
 	"github.com/v3nooom/st3llar/internal/constant"
 	"github.com/v3nooom/st3llar/internal/util"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 	"golang.org/x/term"
 	"gopkg.in/yaml.v3"
-	"os"
-	"syscall"
-)
-
-var (
-	organization string
-	account      string
-	//password     string
-
-	//env          = "dev"
-	//credentialPath = "./credential.json"
 )
 
 type Credential struct {
-	EndPoint     string `json:"endpoint"`
-	Account      string `json:"account"`
-	Token        string `json:"token"`
-	RefreshToken string `json:"refresh_token"`
+	EndPoint     string `yaml:"endpoint"`
+	Account      string `yaml:"account"`
+	Token        string `yaml:"token"`
+	RefreshToken string `yaml:"refresh-token"`
 }
 
 // login represents the sign-in command
@@ -54,8 +47,8 @@ Available credential file is stored locally in the default path: $HOME/.st3llar-
 func init() {
 	rootCMD.Root.AddCommand(login)
 
-	login.Flags().StringVarP(&organization, "organization", "O", "", "Name of the organization")
-	login.Flags().StringVarP(&account, "account", "A", "", "Name of the account")
+	login.Flags().StringP("organization", "O", "", "Name of the organization")
+	login.Flags().StringP("account", "A", "", "Name of the account")
 
 	if err := login.MarkFlagRequired("organization"); err != nil {
 		return
@@ -109,14 +102,13 @@ func loginFunc(cmd *cobra.Command, args []string) {
 	}
 
 	// Write YAML to file
-	err = os.WriteFile(viper.GetString(constant.FlagCredential.ValStr()), credYaml, 0644)
+	err = os.WriteFile(viper.GetString(constant.FlagCredential.ValStr()), credYaml, 0666)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error writing credentials to file")
 		os.Exit(1)
 	}
 
 	// sync to configuration file
-	cfgPath := config.Home() + "/.st3llar"
 	cfg := config.Build(
 		config.WithLogLevel(viper.GetString(constant.FlagLogLevel.ValStr())),
 		config.WithEnvPrefix(viper.GetString(constant.FlagEnvPrefix.ValStr())),
@@ -125,7 +117,7 @@ func loginFunc(cmd *cobra.Command, args []string) {
 		config.WithCredential(viper.GetString(constant.FlagCredential.ValStr())),
 	)
 
-	if err := config.WriteConfig(cfg, cfgPath); err != nil {
+	if err := config.WriteConfig(cfg, config.DefaultPath()); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		os.Exit(1)
 	}
