@@ -1,11 +1,12 @@
 package ginx
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/v3nooom/st3llar/supplier/internal/api/middleware"
 	"net/http"
 
 	"github.com/v3nooom/st3llar/supplier/internal/api/handler"
+	"github.com/v3nooom/st3llar/supplier/internal/api/middleware"
+
+	"github.com/gin-gonic/gin"
 )
 
 func (g *GinAdaptor) RegisterRoutes() {
@@ -16,17 +17,16 @@ func (g *GinAdaptor) RegisterRoutes() {
 
 	oauthGroup := g.Engine.Group("/oauth")
 	{
-		oauthGroup.POST("/login/:org", func(c *gin.Context) {
+		oauthGroup.POST("/login", func(c *gin.Context) {
 			handler.Login(c.Writer, c.Request)
 		})
 
 		oauthGroup.POST("/logout", wrapGinFunc([]http.HandlerFunc{handler.Login})...)
+		oauthGroup.POST("/refresh", wrapGinFunc([]http.HandlerFunc{handler.Login})...)
 	}
 
 	lambdaGroup := g.Engine.Group("/lambda", middleware.Authentication(), middleware.Authorization())
 	{
-		lambdaGroup.POST("/register/:id", wrapGinFunc([]http.HandlerFunc{handler.Login})...)
+		lambdaGroup.POST("/register/:id", wrapGinFunc([]http.HandlerFunc{handler.Register})...)
 	}
-
-	g.POST("/oauth/:id", handler.Login)
 }

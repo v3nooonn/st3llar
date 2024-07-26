@@ -6,10 +6,14 @@ import (
 	"net/http"
 
 	repr "github.com/v3nooom/st3llar/supplier/internal/api/representation"
-	svcOAuth "github.com/v3nooom/st3llar/supplier/internal/service/oauth"
+	svcLambda "github.com/v3nooom/st3llar/supplier/internal/service/lambda"
 )
 
-func Login(w http.ResponseWriter, r *http.Request) {
+func Register(w http.ResponseWriter, r *http.Request) {
+	// Extract JSON Body
+	id := r.Context().Value("id").(string)
+	fmt.Printf("---> Path param id:\n%s\n", id)
+
 	var body repr.Login
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
@@ -28,9 +32,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("---> Query param: %s\n", q1)
 	fmt.Printf("---> Query param: %s\n", q2)
 
-	svcOAuth.Login(body)
+	svcLambda.Register(body)
 
 	// TODO: response handler
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"message": "login"}`))
+	w.Write([]byte(`{"message": "lambda registered"}`))
 }
