@@ -1,7 +1,10 @@
 package oauth
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"syscall"
 
@@ -24,7 +27,7 @@ type Credential struct {
 	RefreshToken string `yaml:"refresh-token"`
 }
 
-// login represents the sign-in command
+// login represents the login command
 var login = &cobra.Command{
 	Use:   "login",
 	Short: "Login to the Stellar auto-task.",
@@ -87,9 +90,42 @@ func loginFunc(cmd *cobra.Command, args []string) {
 		fmt.Printf("flag.Name: %v, flag.Value: %v\n", flag.Name, flag.Value)
 	})
 
+	// TODO: tidy the code, move the request to a separate function/package
+	// 	Currently, the request is in the loginFunc, which is not a good practice
+	// 	It's a verification/experimentation code
+	// make a request to the supplier server
+	// if the request is successful, store the token and refresh token in the credential file
+	var endpoint = "http://st3llar-alb-365211.us-east-2.elb.amazonaws.com"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(
+		"POST",
+		endpoint+"/lambda/register/v3nooom@outlook.com?k1=v1v1v1v1&k2=v2v2v2v2",
+		bytes.NewBuffer([]byte(`{"account":"v3nooom.account","organization":"v3nooom.org","password":"111.pwd"}`)))
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	fmt.Printf("---> Response from supplier: \n%#v\n", string(body))
+
 	// new credential file
 	cred := Credential{
-		EndPoint:     "http://st3llar-alb-365211.us-east-2.elb.amazonaws.com",
+		EndPoint:     endpoint,
 		Account:      viper.GetString("account"),
 		Token:        "JWT_TOKEN",
 		RefreshToken: "JWT_REFRESH_TOKEN",
