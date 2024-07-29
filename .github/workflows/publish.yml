@@ -1,5 +1,7 @@
 name: homebrew-publish
 
+#run-name: ${{ github.actor }}'s HomeBrew publish
+
 on:
   push:
     tags:

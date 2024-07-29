@@ -13,7 +13,6 @@ build/
 #*.log
 
 .git
-.gitignore
 
 .idea/
 .vscode/

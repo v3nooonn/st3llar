@@ -1,0 +1,53 @@
+name: Build and Push Docker Image to Amazon ECR
+
+#run-name: ${{ github.actor }}'s image build and push
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Log in to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: true
+          registry-type: private
+
+      - name: Store and display git commit hash
+        run: |
+          echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "Commit hash: $COMMIT_HASH"
+      - name: Store and display build timestamp
+        run: |
+          echo "BUILD_TIME=$(date +'%T')" >> $GITHUB_ENV
+          echo "Deploying at: $BUILD_TIME"
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-tag-push-to-ecr
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          ECR_REPOSITORY: 57b/autotask
+          IMAGE_TAG: latest
+        run: |
+          docker build -f ./supplier/build/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./supplier
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
