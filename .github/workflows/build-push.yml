@@ -33,14 +33,10 @@ jobs:
           mask-password: true
           registry-type: private
 
-      - name: Store and display git commit hash
+      - name: Basic info
         run: |
-          echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-          echo "Commit hash: $COMMIT_HASH"
-      - name: Store and display build timestamp
-        run: |
-          echo "BUILD_TIME=$(date +'%T')" >> $GITHUB_ENV
-          echo "Deploying at: $BUILD_TIME"
+          echo "Commit hash: $(git rev-parse --short HEAD)"
+          echo "Deploying at: $(date +'%Y-%m-%dT%H:%M:%S')"
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-tag-push-to-ecr
