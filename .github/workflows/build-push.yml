@@ -17,7 +17,8 @@ jobs:
     environment: Production
     runs-on: ubuntu-latest
     steps:
-      - run: |
+      - name: differentiate environment verification
+        run: |
           echo "Production environment variables, region: ${{ vars.PROD_AWS_REGION }}"
           echo "Production environment secrets, token:  ${{ secrets.PROD_TOKEN }}"
 
@@ -27,7 +28,7 @@ jobs:
     environment: Develop
 
     outputs:
-      ecr_image_tag: ${{ steps.build-push-step.outputs.ecr_image_tag }}
+      aws_ecr_image_tag: ${{ steps.build-push-step.outputs.aws_ecr_image_tag }}
 
     steps:
       - name: Checkout code
@@ -35,7 +36,7 @@ jobs:
 
       - name: Configure AWS Credentials
         id: aws-credentials
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -43,17 +44,10 @@ jobs:
 
       - name: Log in to Amazon ECR
         id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
         with:
           mask-password: true
           registry-type: private
-
-#      - name: Commit hash and deployment time
-#        id: commit-hash-deployment-time
-#        run: |
-#          echo "AWS_ECR_IMAGE_VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-#          echo "Commit hash: $(git rev-parse --short HEAD)"
-#          echo "Deploying at: $(date +'%Y-%m-%dT%H:%M:%S')"
 
       - name: Build and push
         id: build-push-step
@@ -64,7 +58,7 @@ jobs:
           export AWS_ECR_IMAGE_TAG=$AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$(git rev-parse --short HEAD)
           docker build -f ./supplier/build/Dockerfile -t $AWS_ECR_IMAGE_TAG ./supplier
           docker push $AWS_ECR_IMAGE_TAG
-          echo "ecr_image_tag=$AWS_ECR_IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "aws_ecr_image_tag=$AWS_ECR_IMAGE_TAG" >> "$GITHUB_OUTPUT"
 
   deploy:
     name: Deploy
@@ -72,7 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: Develop
     env:
-      ECR_IMAGE_TAG: ${{ needs.build-push.outputs.ecr_image_tag }}
+      AWS_ECR_IMAGE_TAG: ${{ needs.build-push.outputs.aws_ecr_image_tag }}
 
     steps:
       - name: Checkout
@@ -80,44 +74,28 @@ jobs:
 
       - name: Receive ECR image tag
         run: |
-          echo "tag that about to use: $ECR_IMAGE_TAG"
+          echo "tag that about to use: $AWS_ECR_IMAGE_TAG"
 
-#      - name: Configure AWS credentials
-#        uses: aws-actions/configure-aws-credentials@v2
-#        with:
-#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#          aws-region: ${{ env.AWS_REGION }}
-#
-#      - name: Login to Amazon ECR
-#        id: login-ecr
-#        uses: aws-actions/amazon-ecr-login@v1
-#
-#      - name: Build, tag, and push image to Amazon ECR
-#        id: build-image
-#        env:
-#          AWS_ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-#          AWS_ECR_IMAGE_VERSION: ${{ github.sha }}
-#        run: |
-#          # Build a docker container and
-#          # push it to ECR so that it can
-#          # be deployed to ECS.
-#          docker build -t $AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$AWS_ECR_IMAGE_VERSION .
-#          docker push $AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$AWS_ECR_IMAGE_VERSION
-#          echo "image=$AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$AWS_ECR_IMAGE_VERSION" >> $GITHUB_OUTPUT
-#
-#      - name: Sync Amazon ECS task definition
-#        id: task-def
-#        uses: aws-actions/amazon-ecs-render-task-definition@v1
-#        with:
-#          task-definition: ${{ env.ECS_TASK_DEFINITION }}
-#          container-name: ${{ env.CONTAINER_NAME }}
-#          image: ${{ steps.build-image.outputs.image }}
-#
-#      - name: Deploy Amazon ECS task definition
-#        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-#        with:
-#          task-definition: ${{ steps.task-def.outputs.task-definition }}
-#          service: ${{ env.ECS_SERVICE }}
-#          cluster: ${{ env.ECS_CLUSTER }}
-#          wait-for-service-stability: true
+      - name: Configure AWS Credentials
+        id: aws-credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Render Amazon ECS task definition
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ecs/taskDefinition.json
+          container-name: ${{ vars.AWS_ECR_CONTAINER_NAME }}
+          image: ${{ env.AWS_ECR_IMAGE_TAG }}
+
+      - name: Deploy to Amazon ECS task definition
+        id: deploy-task-def
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          service: ${{ vars.AWS_ECS_SERVICE }}
+          cluster: ${{ vars.AWS_ECS_CLUSTER }}
