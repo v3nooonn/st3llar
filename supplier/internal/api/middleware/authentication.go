@@ -7,6 +7,6 @@ import (
 
 func Authentication() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		fmt.Println("Authentication middleware")
+		fmt.Println("---> Authentication middleware")
 	}
 }

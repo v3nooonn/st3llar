@@ -7,5 +7,5 @@ import (
 )
 
 func Login(input repr.Login) {
-	fmt.Printf("OAuth service Layer: %#v\n", input)
+	fmt.Printf("---> OAuth service Layer: %#v\n", input)
 }

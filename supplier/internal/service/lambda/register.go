@@ -7,5 +7,5 @@ import (
 )
 
 func Register(input repr.Login) {
-	fmt.Printf("Lambda service Layer: %#v\n", input)
+	fmt.Printf("---> Lambda service Layer: %#v\n", input)
 }
