@@ -1,4 +1,4 @@
-name: Build and Push Docker Image to Amazon ECR
+name: Build push and deploy to Amazon ECS
 
 #run-name: ${{ github.actor }}'s image build and push
 
@@ -84,7 +84,7 @@ jobs:
         id: render-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: ecs/taskDefinition.json
+          task-definition: ecs/task-defs-supplier.json
           container-name: ${{ vars.AWS_ECR_CONTAINER_NAME }}
           image: ${{ env.AWS_ECR_IMAGE_TAG }}
 
