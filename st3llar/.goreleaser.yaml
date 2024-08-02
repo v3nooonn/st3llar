@@ -20,9 +20,9 @@ builds:
     env:
       - CGO_ENABLED=0
     goos:
-      #      - linux
-      #      - windows
+      - linux
       - darwin
+#      - windows
 
 archives:
   - format: tar.gz
@@ -53,8 +53,7 @@ universal_binaries:
   - replace: true
 
 brews:
-  -
-    name: st3llar
+  - name: st3llar
     homepage: "https://github.com/v3nooonn/st3llar/tree/main/st3llar"
     repository:
       name: homebrew-taps
