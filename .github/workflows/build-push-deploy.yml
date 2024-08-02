@@ -72,10 +72,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Receive ECR image tag
-        run: |
-          echo "tag that about to use: $AWS_ECR_IMAGE_TAG"
-
       - name: Configure AWS Credentials
         id: aws-credentials
         uses: aws-actions/configure-aws-credentials@v4

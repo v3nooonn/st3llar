@@ -2,7 +2,9 @@ package config
 
 import (
 	"fmt"
+	"github.com/v3nooom/st3llar/internal/util"
 	"os"
+	"path/filepath"
 
 	"github.com/v3nooom/st3llar/internal/constant"
 
@@ -70,6 +72,8 @@ func WithCredential(credential string) St3llarConfigOpt {
 	}
 }
 
+// Below are the support functions exported.
+
 func Home() string {
 	home, err := os.UserHomeDir()
 	cobra.CheckErr(err)
@@ -108,4 +112,33 @@ func ReadConfig(path string) (*St3llarConfig, error) {
 	}
 
 	return cfg, nil
+}
+
+// FindConfig checks the configuration file
+func FindConfig() (*St3llarConfig, string) {
+	home := Home()
+
+	cfgPath := filepath.Join(home, constant.ConfigName.ValStr())
+
+	if util.IsExists(cfgPath) {
+		cfg, err := ReadConfig(cfgPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+			os.Exit(1)
+		}
+
+		return cfg, cfgPath
+	}
+
+	cfg := Build(
+		WithDefault(),
+		WithCredential(filepath.Join(home, constant.CredentialName.ValStr())),
+	)
+
+	if err := WriteConfig(cfg, cfgPath); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+		os.Exit(1)
+	}
+
+	return cfg, cfgPath
 }

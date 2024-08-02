@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/v3nooom/st3llar/internal/config"
@@ -75,44 +74,9 @@ func init() {
 }
 
 func initConfig() {
-	cfg, _ := findConfig()
+	cfg, _ := config.FindConfig()
 	setupViper(cfg)
 	slog.Info(fmt.Sprintf("using config path: %s", viper.ConfigFileUsed()))
-}
-
-// findConfig checks the configuration file
-func findConfig() (*config.St3llarConfig, string) {
-	home := config.Home()
-
-	cfgPath := filepath.Join(home, constant.ConfigName.ValStr())
-
-	if isExists(cfgPath) {
-		cfg, err := config.ReadConfig(cfgPath)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-			os.Exit(1)
-		}
-
-		return cfg, cfgPath
-	}
-
-	cfg := config.Build(
-		config.WithDefault(),
-		config.WithCredential(filepath.Join(home, constant.CredentialName.ValStr())),
-	)
-
-	if err := config.WriteConfig(cfg, cfgPath); err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-		os.Exit(1)
-	}
-
-	return cfg, cfgPath
-}
-
-func isExists(path string) bool {
-	_, err := os.Stat(path)
-
-	return err == nil
 }
 
 // setupViper viper setup

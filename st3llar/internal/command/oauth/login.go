@@ -40,7 +40,6 @@ Available credential file is stored locally in the default path: $HOME/.st3llar-
 	Args:      cobra.OnlyValidArgs,
 	ValidArgs: []string{"organization", "account", "env"},
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-
 		util.PreRunBindFlags(cmd, args)
 		return nil
 	},
