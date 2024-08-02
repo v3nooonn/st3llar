@@ -55,7 +55,7 @@ universal_binaries:
 brews:
   -
     name: st3llar
-    homepage: "https://github.com/v3nooonn/st3llar-helper/tree/main/st3llar"
+    homepage: "https://github.com/v3nooonn/st3llar/tree/main/st3llar"
     repository:
       name: homebrew-taps
       owner: v3nooonn
