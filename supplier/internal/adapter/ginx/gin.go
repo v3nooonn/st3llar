@@ -49,7 +49,7 @@ func WithCORS() GinAdaptorOpts {
 	}
 }
 
-func WithHeaderHanlder() GinAdaptorOpts {
+func WithHeaderHandler() GinAdaptorOpts {
 	return func(adaptor *GinAdaptor) {
 		adaptor.Engine.Use(headerHandler())
 	}

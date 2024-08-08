@@ -8,7 +8,7 @@ func main() {
 	router := ginx.NewWithOpts(
 		ginx.WithCustomRecovery(),
 		ginx.WithCORS(),
-		ginx.WithHeaderHanlder(),
+		ginx.WithHeaderHandler(),
 		ginx.WithErrorHandler(),
 	)
 
